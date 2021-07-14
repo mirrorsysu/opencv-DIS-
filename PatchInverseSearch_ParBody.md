@@ -102,9 +102,11 @@ void DISOpticalFlowImpl::PatchInverseSearch_ParBody::operator()(const Range &ran
         dst = computeSSD(I0_ptr + i * dis->w + j, I1_ptr + (int)i_I1 * w_ext + (int)j_I1, dis->w, w_ext, w00, w01,     \
                          w10, w11, psz);
 
+    // num_iter似乎是2
     int num_inner_iter = (int)floor(dis->grad_descent_iter / (float)num_iter);
     for (int iter = 0; iter < num_iter; iter++)
     {
+        // 分别是正着来一次和反着来一次 不知道为啥要两次？
         if (iter % 2 == 0)
         {
             dir = 1;
@@ -134,6 +136,7 @@ void DISOpticalFlowImpl::PatchInverseSearch_ParBody::operator()(const Range &ran
             {
                 if (iter == 0)
                 {
+                    //Sx Sy是一块重复利用的区域
                     /* Using result form the previous pyramid level as the very first approximation: */
                     Sx_ptr[is * dis->ws + js] = Ux_ptr[(i + psz2) * dis->w + j + psz2];
                     Sy_ptr[is * dis->ws + js] = Uy_ptr[(i + psz2) * dis->w + j + psz2];
