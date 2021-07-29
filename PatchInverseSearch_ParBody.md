@@ -106,7 +106,13 @@ void DISOpticalFlowImpl::PatchInverseSearch_ParBody::operator()(const Range &ran
     int num_inner_iter = (int)floor(dis->grad_descent_iter / (float)num_iter);
     for (int iter = 0; iter < num_iter; iter++)
     {
+        // w = ws * patch_stride 约等于
         // 分别是正着来一次和反着来一次 不知道为啥要两次？
+        // dir 方向
+        // stripe_sz并行数
+        // start_is -> end_is 本线程负责的patch范围
+        // start_js -> end_js 整个ws
+        // start_i start_is对应的下标
         if (iter % 2 == 0)
         {
             dir = 1;
@@ -129,6 +135,7 @@ void DISOpticalFlowImpl::PatchInverseSearch_ParBody::operator()(const Range &ran
         }
 
         i = start_i;
+        // dir * is < dir * end_is (因为dis可能为负)
         for (int is = start_is; dir * is < dir * end_is; is += dir)
         {
             j = start_j;
@@ -208,6 +215,7 @@ void DISOpticalFlowImpl::PatchInverseSearch_ParBody::operator()(const Range &ran
 
                 for (int t = 0; t < num_inner_iter; t++)
                 {
+                    // 这块是用来干嘛的呢
                     INIT_BILINEAR_WEIGHTS(cur_Ux, cur_Uy);
                     if (dis->use_mean_normalization)
                         SSD = processPatchMeanNorm(dUx, dUy,
